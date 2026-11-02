@@ -8618,6 +8618,454 @@ weighted avg       0.86      0.86      0.86       313
 </div>
 </div>
 </div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=f2d44b18">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [14]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># ==========================================</span>
+<span class="c1"># Export trained model to TensorFlow Lite</span>
+<span class="c1"># ==========================================</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="c1"># 1. Load the selected, trained model</span>
+<span class="n">model_path</span> <span class="o">=</span> <span class="n">BEST_MODEL_PATH</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Model loaded:"</span><span class="p">,</span> <span class="n">model_path</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Input shape:"</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">input_shape</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Output shape:"</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">output_shape</span><span class="p">)</span>
+
+<span class="c1"># 2. Convert the Keras model to TensorFlow Lite</span>
+<span class="n">converter</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">lite</span><span class="o">.</span><span class="n">TFLiteConverter</span><span class="o">.</span><span class="n">from_keras_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="n">tflite_model</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">convert</span><span class="p">()</span>
+
+<span class="c1"># 3. Save the converted model</span>
+<span class="n">tflite_path</span> <span class="o">=</span> <span class="s2">"face_liveness_model.tflite"</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">tflite_path</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">tflite_model</span><span class="p">)</span>
+
+<span class="c1"># 4. Confirm the exported file</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Export completed:"</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">tflite_path</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"File size:"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">tflite_path</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="s2">"KB"</span><span class="p">)</span>
+
+<span class="c1"># 5. Verify that TensorFlow Lite can load the model</span>
+<span class="n">interpreter</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">lite</span><span class="o">.</span><span class="n">Interpreter</span><span class="p">(</span><span class="n">model_path</span><span class="o">=</span><span class="n">tflite_path</span><span class="p">)</span>
+<span class="n">interpreter</span><span class="o">.</span><span class="n">allocate_tensors</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"TFLite input:"</span><span class="p">,</span> <span class="n">interpreter</span><span class="o">.</span><span class="n">get_input_details</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="s2">"shape"</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"TFLite output:"</span><span class="p">,</span> <span class="n">interpreter</span><span class="o">.</span><span class="n">get_output_details</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="s2">"shape"</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"TFLite model verification successful."</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Model loaded: best_liveness_model.keras
+Input shape: (None, 224, 224, 3)
+Output shape: (None, 1)
+INFO:tensorflow:Assets written to: C:\Users\DELL\AppData\Local\Temp\tmpk79fhbei\assets
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre>INFO:tensorflow:Assets written to: C:\Users\DELL\AppData\Local\Temp\tmpk79fhbei\assets
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Saved artifact at 'C:\Users\DELL\AppData\Local\Temp\tmpk79fhbei'. The following endpoints are available:
+
+* Endpoint 'serve'
+  args_0 (POSITIONAL_ONLY): TensorSpec(shape=(None, 224, 224, 3), dtype=tf.float32, name='input_layer')
+Output Type:
+  TensorSpec(shape=(None, 1), dtype=tf.float32, name=None)
+Captures:
+  2399146185488: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146185680: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146184720: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146187024: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146185872: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146185296: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146183760: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146183568: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146196816: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146185104: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146184336: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146196048: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146196240: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146195856: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146184528: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146196624: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146195280: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146195472: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146195088: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146183952: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146195664: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146194320: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146194512: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146194128: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146196432: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146194896: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146193360: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146193552: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146193168: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146184144: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146193936: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146192400: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146192592: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146192208: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146194704: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146192976: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146191248: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146191632: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146191056: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146193744: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146192016: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146190288: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146190480: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146190096: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146192784: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146190864: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146189520: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146189712: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146189328: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146191824: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146189904: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146188560: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146188752: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146188368: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146190672: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146189136: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146187600: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146187792: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146187408: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146191440: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398924900112: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146187984: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146188944: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398924900688: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398924913936: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146187216: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834867600: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834864912: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2399146188176: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834865680: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834865296: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834865488: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834865104: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834865872: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834868752: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834863568: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834859728: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834866064: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834859344: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834864720: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834866256: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834858768: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834857040: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834858384: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834864144: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834859536: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834857232: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834857424: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834861072: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834866448: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834858576: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834861840: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834864528: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834862032: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834858000: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834862992: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834862800: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834863760: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834860112: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834857808: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834864336: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834860880: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834862416: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834859152: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834863184: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834862608: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834859920: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834861456: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834858192: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834863376: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834861648: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834858960: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834860496: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834857616: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834862224: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834860688: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638623120: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638624848: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834860304: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396834861264: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638624080: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638624656: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638622160: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638624272: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638625616: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638625232: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638623696: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638621200: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638625424: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638625040: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638624464: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638620240: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638621968: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638622736: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638623888: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638623312: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638619280: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638621008: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638621776: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638622928: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638622352: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638618512: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638620048: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638620816: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638623504: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638621392: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638613328: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638619088: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638619856: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638622544: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638620432: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638618128: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638617168: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638618896: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638621584: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638619472: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638612752: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638617552: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638615632: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638620624: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638615248: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638616976: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638613904: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638616784: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638619664: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638617744: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638613712: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638615824: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638614288: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638618704: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638614864: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638613136: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638616592: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638617936: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638618320: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398561136336: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638616016: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638614480: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638612944: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638612176: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638614672: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2397083725904: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2397083723024: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2396638614096: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2397083720720: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2397083723408: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2397083719760: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2397083725520: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2397083720912: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2397083724176: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2397083726480: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922168400: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922173584: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2397083726672: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922169552: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922169744: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922171088: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922170704: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922171280: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922168976: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922169936: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922165904: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922170128: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922167824: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922172432: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922170896: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922166864: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922166672: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922169168: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922170320: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922168016: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922164944: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922167632: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922167440: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922170512: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922168208: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922163984: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922165712: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922166480: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922169360: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922167056: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922163024: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922164752: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922165520: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922168592: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922166096: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922162256: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922163792: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922164560: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922167248: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922165136: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922162448: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922162832: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922163600: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922166288: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922164176: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922163408: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922163216: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922164368: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922162640: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398922165328: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398684328976: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398684330704: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398684331472: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398684330896: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398684329936: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398684328016: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398684329744: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398684330512: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398684331856: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398684331088: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398684327056: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398684328784: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398684329552: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398684331664: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398684330128: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398684326096: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398684327824: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398684328592: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398684331280: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398684328208: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398684327248: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398684325136: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2398684318992: TensorSpec(shape=(), dtype=tf.resource, name=None)
+Export completed: f:\methods of prediction\assignment\face_liveness_model.tflite
+File size: 8984.39 KB
+TFLite input: [  1 224 224   3]
+TFLite output: [1 1]
+TFLite model verification successful.
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre>c:\Users\DELL\anaconda3\Lib\site-packages\tensorflow\lite\python\interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=9f7ccae2">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [15]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="c1"># Load the Keras model</span>
+<span class="n">keras_model</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span>
+    <span class="s2">"best_liveness_model.keras"</span>
+<span class="p">)</span>
+
+<span class="c1"># Load the TensorFlow Lite model</span>
+<span class="n">interpreter</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">lite</span><span class="o">.</span><span class="n">Interpreter</span><span class="p">(</span>
+    <span class="n">model_path</span><span class="o">=</span><span class="s2">"face_liveness_model.tflite"</span>
+<span class="p">)</span>
+<span class="n">interpreter</span><span class="o">.</span><span class="n">allocate_tensors</span><span class="p">()</span>
+
+<span class="n">input_details</span> <span class="o">=</span> <span class="n">interpreter</span><span class="o">.</span><span class="n">get_input_details</span><span class="p">()</span>
+<span class="n">output_details</span> <span class="o">=</span> <span class="n">interpreter</span><span class="o">.</span><span class="n">get_output_details</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Input details:"</span><span class="p">,</span> <span class="n">input_details</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Output details:"</span><span class="p">,</span> <span class="n">output_details</span><span class="p">)</span>
+
+<span class="c1"># Create a sample input image tensor</span>
+<span class="n">sample_image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span>
+    <span class="mi">1</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">3</span>
+<span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+<span class="c1"># Predict using Keras</span>
+<span class="n">keras_prediction</span> <span class="o">=</span> <span class="n">keras_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+    <span class="n">sample_image</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span>
+<span class="p">)</span>
+
+<span class="c1"># Predict using TensorFlow Lite</span>
+<span class="n">interpreter</span><span class="o">.</span><span class="n">set_tensor</span><span class="p">(</span>
+    <span class="n">input_details</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">"index"</span><span class="p">],</span>
+    <span class="n">sample_image</span>
+<span class="p">)</span>
+<span class="n">interpreter</span><span class="o">.</span><span class="n">invoke</span><span class="p">()</span>
+
+<span class="n">tflite_prediction</span> <span class="o">=</span> <span class="n">interpreter</span><span class="o">.</span><span class="n">get_tensor</span><span class="p">(</span>
+    <span class="n">output_details</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">"index"</span><span class="p">]</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Keras prediction:"</span><span class="p">,</span> <span class="n">keras_prediction</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"TFLite prediction:"</span><span class="p">,</span> <span class="n">tflite_prediction</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span>
+    <span class="s2">"Predictions match:"</span><span class="p">,</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span>
+        <span class="n">keras_prediction</span><span class="p">,</span>
+        <span class="n">tflite_prediction</span><span class="p">,</span>
+        <span class="n">atol</span><span class="o">=</span><span class="mf">1e-4</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Input details: [{'name': 'serving_default_input_layer:0', 'index': 0, 'shape': array([  1, 224, 224,   3], dtype=int32), 'shape_signature': array([ -1, 224, 224,   3], dtype=int32), 'dtype': &lt;class 'numpy.float32'&gt;, 'quantization': (0.0, 0), 'quantization_parameters': {'scales': array([], dtype=float32), 'zero_points': array([], dtype=int32), 'quantized_dimension': 0, 'block_size': 0}, 'sparsity_parameters': {}}]
+Output details: [{'name': 'StatefulPartitionedCall_1:0', 'index': 175, 'shape': array([1, 1], dtype=int32), 'shape_signature': array([-1,  1], dtype=int32), 'dtype': &lt;class 'numpy.float32'&gt;, 'quantization': (0.0, 0), 'quantization_parameters': {'scales': array([], dtype=float32), 'zero_points': array([], dtype=int32), 'quantized_dimension': 0, 'block_size': 0}, 'sparsity_parameters': {}}]
+Keras prediction: [[0.0024283]]
+TFLite prediction: [[0.00242836]]
+Predictions match: True
+</pre>
+</div>
+</div>
+</div>
+</div>
 </div>
 </main>
 </body>
